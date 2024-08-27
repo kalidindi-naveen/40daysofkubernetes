@@ -1,0 +1,61 @@
+## Kubernetes
+
+#### CronJob
+```
+*       *       *       *       *
+min     hrs     Day     mnt     Day
+                of mnt          of week
+0-59    0-23    1-31    1-12    0-6 (sun-sat)
+
+
+# ┌───────────── minute (0 - 59)
+# │ ┌───────────── hour (0 - 23)
+# │ │ ┌───────────── day of the month (1 - 31)
+# │ │ │ ┌───────────── month (1 - 12)
+# │ │ │ │ ┌───────────── day of the week (0 - 6) (Sunday to Saturday)
+# │ │ │ │ │                                   OR sun, mon, tue, wed, thu, fri, sat
+# │ │ │ │ │ 
+# │ │ │ │ │
+# * * * * *
+```
+Examples:
+- Every Saturday
+    ```
+    * * * * 6
+    ```
+- Every Saturday at 11 PM
+    ```
+    * 23 * * 6
+    ```
+- Every Saturday at 11:45 PM
+    ```
+    45 23 * * 6
+    ```
+- Every 5 min
+    ```
+    */5 * * * *
+    ```
+```
+k apply -f cron.yaml
+
+k get cj
+NAME    SCHEDULE    TIMEZONE   SUSPEND   ACTIVE   LAST SCHEDULE   AGE
+hello   * * * * *   <none>     False     0        <none>          16s
+
+k get job
+NAME             STATUS     COMPLETIONS   DURATION   AGE
+hello-28746238   Complete   1/1           3s         79s
+hello-28746239   Complete   1/1           3s         19s
+```
+#### Job
+- Execute Once
+- use it for Installing Scripts
+```
+k apply -f job.yaml 
+
+k get po --watch
+NAME       READY   STATUS              RESTARTS   AGE
+pi-fmd55   0/1     ContainerCreating   0          19s
+pi-fmd55   1/1     Running             0          73s
+pi-fmd55   0/1     Completed           0          80s
+```
