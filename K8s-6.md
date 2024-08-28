@@ -1,0 +1,71 @@
+## Kubernetes
+
+Note: Scheduler is responsible for scheduling pods inside cluster
+```
+k get pods -n kube-system | grep scheduler
+kube-scheduler-nk-control-plane            1/1     Running   2 (11m ago)   36
+```
+Scheduler itself running as pod.\
+QQ: who will schedule these pods?
+### Static pods
+```
+kubelet will run this pods
+```
+Note: kubelet will always monitor this directory (/etc/kubernetes/manifests/)
+#### These are static pods manifest 
+```
+docker exec -it nk-control-plane bash
+root@nk-control-plane:/# cd /etc/kubernetes/manifests/
+root@nk-control-plane:/etc/kubernetes/manifests# ls
+etcd.yaml  kube-apiserver.yaml  kube-controller-manager.yaml  kube-scheduler.yaml
+```
+#### Move Scheduler manifest file to /tmp
+```
+root@nk-control-plane:/etc/kubernetes/manifests# mv kube-scheduler.yaml /tmp
+```
+```
+k get po -n kube-system | grep scheduler
+
+Nothing was shown
+```
+#### Create pod
+```
+k run nginx --image=nginx
+
+k get po
+NAME    READY   STATUS    RESTARTS   AGE
+nginx   0/1     Pending   0          22s
+
+k describe po nginx
+Node:             <none>
+Status:           Pending
+```
+### Manual Schedule of POD's
+- if yaml consist `nodeName:` then scheduler will not pick this, direcly goes to specified nodeName.
+- if yaml not consist `nodeName:` then scheduler will pick this and schedule pods.
+```
+apiVersion: v1
+kind: Pod
+metadata:
+  labels:
+    run: nginx-new
+  name: nginx-new
+spec:
+  containers:
+  - image: nginx
+    name: nginx-new
+  nodeName: nk-worker2
+```
+```
+k apply -f static.yaml
+```
+```
+k get po
+NAME        READY   STATUS    RESTARTS   AGE
+nginx-new   1/1     Running   0          3s
+```
+```
+k get po --selector tier=fe
+
+k get po --selector tier=be
+```
